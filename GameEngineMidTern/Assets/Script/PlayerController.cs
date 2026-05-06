@@ -1,5 +1,36 @@
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
+
+
+
+public static class HighScore
+{
+
+
+    private const string KEY = "HighScore";
+
+
+    public static int Load(int stage)
+    {
+        return PlayerPrefs.GetInt(KEY + stage, 0);
+    }
+
+
+
+
+    public static void TrySet(int stage, int newScore)
+    {
+        if (newScore <= Load(stage))
+            return;
+
+        PlayerPrefs.SetInt(KEY + stage, newScore);
+        PlayerPrefs.Save();
+
+    }
+}
+
 
 public class PlayerController : MonoBehaviour
 {
@@ -12,9 +43,17 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded;
     private float moveInput;
 
+    float score;
+
+
+
+
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        score = 0f;
+
     }
 
     private void Update()
@@ -39,4 +78,20 @@ public class PlayerController : MonoBehaviour
 
         }
     }
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Respawn"))
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+
+        if (collision.CompareTag("Finish"))
+        {
+            HighScore.TrySet(SceneManager.GetActiveScene().buildIndex, (int)score);
+            
+        }
+    }
+
+
+
 }
